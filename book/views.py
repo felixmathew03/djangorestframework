@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny,IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 
 def generate_token(user):
@@ -61,4 +61,42 @@ class UserViewSet(ViewSet):
     def me(self,request):
         return Response({
             'message':'Welcome user'
+        })
+        
+    @action(detail=False,methods=['post'],permission_classes = [IsAuthenticated])
+    def logout(sel,request):
+        refresh = request.data['refresh']
+        token = RefreshToken(refresh)
+        token.blacklist()
+        return Response({
+            "message":"Logged out"
+        })
+        
+class PermissionDemoViewSet(ViewSet):
+    @action(detail=False, methods=['get'], permission_classes = [AllowAny])
+    def open_route(self,request):
+        return Response({
+            "message":"This is an open end point..."
+        })
+        
+    @action(detail=False, methods=['get'], permission_classes = [IsAuthenticated])
+    def logged_in_only(self,request):
+        return Response({
+            "message":"This is an end point open only for logged-in users..."
+        })
+    
+    @action(detail=False, methods=['get','post'], permission_classes = [IsAuthenticatedOrReadOnly])
+    def read_or_write(self,request):
+        if request.method == 'GET':
+            return Response({
+                "message":"Anyone could read this end point..."
+            })
+        return Response({
+            "message":"Only authenticated users could write data..."
+        })
+        
+    @action(detail=False, methods=['get'], permission_classes = [IsAdminUser])
+    def admin_only(self,request):
+        return Response({
+            "message":"This is an end point open only for admin user..."
         })
