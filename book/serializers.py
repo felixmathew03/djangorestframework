@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book
+from .models import Book, Task
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
@@ -34,3 +34,9 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Invalid credentials.')
         data['user'] = user
         return data
+    
+class TaskSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = '__all__'
+        read_only_fields = ['owner']
